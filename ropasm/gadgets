@@ -1,0 +1,172 @@
+/*
+Used by `compiler.py`.
+
+A line with only `/*` starts a multi-line comment. A line with only `*/` ends it.
+The `/*` and `*/` should be on their own line.
+A `#` character starts an inline comment.
+
+Each line should either be empty or have the format
+
+	 <address><tab character><description>
+
+`<address>` are in hexadecimal.
+
+`<description>` should not contains tab character or `;`.
+Spaces between non-alphanumeric characters are insignificant.
+Leading/trailing spaces are insignificant.
+Case-insensitive.
+
+{curly brackets} at the begin of description are meta-tags. Case insensitive.
+
+Allowed tags:
+
+* `{set lr}`: Jumping to this function sets the value of LR (and LCSR)
+	to an instruction that pops PC, or have similar behavior.
+* `{del lr}`: Reverse of {set lr}.
+* `{rt}`: This function ends with a RT (or have similar behavior),
+	in order to properly control the PC after jumping to this,
+	it's necessary for LR to have specific values.
+* `{override rename list}`: Override the auto-detected information in `570es+_names.txt`.
+* `{warning ...}`: Gives a warning when the gadget/function is used.
+
+*/
+
+#adr		description
+#----------------------
+
+02760		{Set LR} {Override rename list} strcpy_null
+0276A		[ER0] = R2
+029A8		pop xr12
+02AAE		{RT} r0 >>= 4
+02CB0		r0 = r8, pop r8
+02D34		pop er4
+03182		{RT} R0 = R2, pop xr8
+032A0		pop er0
+032A2		no-op
+03A68		pop er12
+03DE2		r2 = r0
+0440A		[er8] += er2, pop xr8
+0442C		{RT} [er10] = er8, pop qr8
+044B2		pop er2
+04E50		{override rename list} {warning use strcpy_null instead} strcpy
+04722		{Set LR} KO = R2 = 0             # expensive
+04F68		sp = er14, pop er14
+04F6A		pop er14
+07468		er2 = er0, pop er8
+0746A		er0 = er2, pop er8
+134AA   	 er2 = er0, er0 += er4
+0746C		pop er8
+07EF8		{RT} memcpy, pop er14
+087FC		{RT} er0 = er2
+08AEE		{RT} er2 = 1, r0 = 1
+087F6		er0 = max<unsigned>(er0, er2)
+
+11D90		bl er12
+
+				# use after {Del LR} functions and before {RT} function
+11E63		{Set LR} set lr
+132F2		{RT} [er0] = er2
+13482		{RT} ER0 += ER2, ER8 = [ER0]
+13484		{RT} ER8 = [ER0]
+1417E		er0 = er8                        # expensive
+1441C		r0 = [er2]
+16618   	 r0 = [er0]
+14558		r0 = 0, pop er14 r4
+1468C		er8 = er0
+154EE		pop xr0
+157F0		r2 = r4
+168AC		r0 = r8, pop xr8
+168B0		pop xr8
+16CDA		memcpy, pop er0 er4
+16CEC		{RT} ER0 += ER2
+1853A		r0 = r2 = 0
+1853C		r0 = r2
+19F9E		R0 &= 15
+13230		{RT} er10 = er2
+
+# ====== Actual functions (or most of)
+# calling convention: register, if use stack, caller have to clean up
+
+03136		{RT} rendl6     # *(stack-front) -> real screen
+03441		multiline ASCII                  # at ER0, R2 lines
+035B2		{Set LR} Render buffer
+
+04CE8		{RT} memmove                     # similar to memcpy
+				# er0 <- er2. Call 4e50. Do nothing if er2 == 0.
+
+0B656		{Del LR} wait for key
+
+047F2		{RT} wait for ki
+0B2E2		{Del LR} getkey # (~ki, ko) -> [er0]
+047EA		{RT} ko = 0
+04670		{RT} enter stop mode
+04BE0		er0 = er8, pop qr8
+088D0 		{RT} er0 = er8, pop er8
+
+13480 		{RT} load_table # er8 = er2[er0+er0]
+02FB8 		{RT} set_pixel
+02FC8 		{RT} set_pixel_unbound
+15336 		r1 = 0
+02C70 		jpop er14
+03364		jpop xr12
+0482E 		pop er10
+048F2 		pop qr0
+0329c 		memcpy, pop er0
+08B04 		er0 /= r2
+134B8 		er0 = [er2], r2 = 9
+047FA 		r0++ if key
+047F4 		ko = r0, er0 = 1 if key else 0
+0474E 		r2 = 8:[ea+]
+047E4 		ko = r0
+02FE0 		ea = er0, [ea] |= r3, pop er4
+16474 		qr0 = r8 = 0, r9 = 1
+1852c 		er2 = 1
+073D8 		pop er8
+0309E 		pop ea, r9 = 5
+157EC 		backup r2, pop xr0, restore r2
+18C08 		er0 = [8050], [8000] = er2, [8050] = er2
+03134 		render er0
+06C2A 		r4 = r0, pop er4 er8
+154BE 		wordcpy, pop qr0 # er0 = src, er2 = dst, r6 = len
+0335E 		repeat while 5E < 66
+19BAA 		qr0 = [ea], lea [reg0.2], [ea] = qr0
+0B2E2 		getscancode_nodelay
+036EC 		ea_switchcase
+02ABE 		r1 = hex_byte_reverse, [8100] = r1
+02AC2 		r1 |= r0, [8100] = r1
+046AA 		r0 = [ea]
+02B6C 		er0 = ea, -1[er0] = r2
+08AD0 		r1 = r0, font_size = 7
+18802 		r1 &= 15, [8000] = r1
+04C9A 		r0 = r1
+180E4 		[8010] = er0
+02BD0 		r0++
+04592 		er0 -= er2
+035B2 		set lr, render
+13498 		er4 *= r2, er4 += er0
+16CDE 		pop er0, er4
+
+172A8 		er4 - er2_ne, r0 = 0 | r0 = 1
+17A0A 		r2 - r3_lt, r0 = 0 | r0 = 1
+134A8 		er0 *= r2, er2 = er0, er0 += er4
+12C86 		bl er12[r0<<1]
+16478 		er4 = 0, er6 = 0, er8 = 0x0100
+13230 		er10 = er2
+1322E 		er8 = er0, er10 = er2
+10EEE 		er0 = er10, pop xr8
+02EB4 		er2 = er10, pop qr8
+
+16476 		er2, er4, er6 = 0, er8 = 0x0100
+047FE 		r2 = [ea], r0++ if r2
+
+085E4 		lr = pop er0
+
+0C8B6 		brk
+
+1B10A 		ea = er0, [ea+] = er2, 3xer4, er6, r0 = 0, pop xr4
+1B120 		ea = er0, [ea+] = 2xxr4, er4, r0 = 240, pop xr4
+
+134B6 		er0 = [er0 + er2]
+
+1B112		{RT} [ea+] = er4, [ea+] = er6, r0 = 0, pop xr4
+02D8C		pop xr4
