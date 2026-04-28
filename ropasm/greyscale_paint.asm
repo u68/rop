@@ -1,11 +1,11 @@
-org 0x85ba
+#org 0x8430
 home:
 	xr0 = 0x87d0, 0x0300
 	memzero
 	set lr
-	xr0 = adr_of [-352] main_run, adr_of main_run
+	xr0 = adr_of [-364] main_run, adr_of main_run
 	memcpy, pop er0
-	0x014C
+	0x0150
 	set lr
 main_run:
 	
@@ -51,8 +51,22 @@ down:
 right:
 	er2 = 0x0001
 	jpop er14
+
+	adr_of [-2] cnt
 left:
 	er2 = 0xFFFF
+	jpop er14
+
+	adr_of [-2] cnt
+adjp:
+	er8 = adr_of [-364] second
+	er2 = 0x0005
+	jpop er14
+
+adjm:
+	er8 = adr_of [-364] second
+	er2 = 0xFFFB
+
 cnt:
 	[er8] += er2,pop xr8
 	0x30303030
@@ -76,7 +90,9 @@ rend:
 	er0 = 0x0010 # adjust this, pwm stuff
 	delay
 	render
-	er0 = 0x0040 # adjust this, pwm stuff
+	pop er0
+second:
+	0x0040 # adjust this, pwm stuff
 	delay
 	er0 = 0x8950
 	render er0
@@ -87,7 +103,7 @@ restore:
 	set lr
 	xr0 = adr_of length, 0x01, 0x00
 	[er0] = er2
-	qr0 = 0x014C, adr_of [-352] main_run, adr_of main_run, 0x30, 0x30
+	qr0 = 0x0150, adr_of [-364] main_run, adr_of main_run, 0x30, 0x30
 	0x6CD6
 length:
 	0x000E
@@ -104,17 +120,23 @@ key_switch:
 	0x31
 
 	0x44 # left
-	0x3B
+	0x3D
 
 	0x05 # 3
-	0x5D
+	0x81
 
 	0x03 # 2
-	0x6B
+	0x8F
 	
 	0x01 # 1
-	0x83
+	0xA7
+
+	0x09 # +
+	0x49
+
+	0x11 # -
+	0x59
 
 	0x00 # default
-	0x8B
+	0xAF
 end:
