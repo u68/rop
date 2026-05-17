@@ -70,7 +70,7 @@ Allowed tags:
 13484		{RT} ER8 = [ER0]
 1417E		er0 = er8                        # expensive
 1441C		r0 = [er2]
-16618   	 r0 = [er0]
+16618   	r0 = [er0]
 14558		r0 = 0, pop er14 r4
 1468C		er8 = er0
 154EE		pop xr0
@@ -170,3 +170,16 @@ Allowed tags:
 
 1B112		{RT} [ea+] = er4, [ea+] = er6, r0 = 0, pop xr4
 02D8C		pop xr4
+
+08AEE		er2 = 1, r0 = r2
+088B0		er2 = [8000], er0 += er2
+18804		[8000] = er0
+18054		[8020] = er0
+1B0F2		r0 &= 240
+
+0366C		r0 - r1_eq, r0 = 0 | r0 = 1
+134AC		er0 += er4
+15310		pop r0
+047FE		r2 = [ea], r0++ if 255
+030B6		pop er2, er8, er0 = er2
+14586		r2 = r1, er14++
